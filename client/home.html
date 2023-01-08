@@ -39,7 +39,7 @@
       </template>
       <template x-if="$store.auth.isAuth">
         <div class="is-flex is-flex-direction-column">
-          <p x-text="`Welcome ${$store.auth.username}`"></p>
+          <p x-text="`Welcome ${$store.auth.username}!`"></p>
           <h2 class="is-size-4">Links</h2>
           <p x-text="$store.auth.statusText"></p>
           <table class="table">
