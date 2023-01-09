@@ -2,9 +2,9 @@
 
 Go links server written in Rust.
 
-![Docker Pulls](https://img.shields.io/docker/pulls/prateekkumarweb/go?style=for-the-badge)
-![Docker Image Size](https://img.shields.io/docker/image-size/prateekkumarweb/go/alpha?style=for-the-badge&arch=arm64)
-![Docker Stars](https://img.shields.io/docker/stars/prateekkumarweb/go?style=for-the-badge)
+[![Docker Pulls](https://img.shields.io/docker/pulls/prateekkumarweb/go?style=for-the-badge)](https://hub.docker.com/r/prateekkumarweb/go)
+[![Docker Image Size](https://img.shields.io/docker/image-size/prateekkumarweb/go/alpha?style=for-the-badge&arch=arm64)](https://hub.docker.com/r/prateekkumarweb/go)
+[![Docker Stars](https://img.shields.io/docker/stars/prateekkumarweb/go?style=for-the-badge)](https://hub.docker.com/r/prateekkumarweb/go)
 
 ## Build
 

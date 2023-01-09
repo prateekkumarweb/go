@@ -8,7 +8,10 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.css"
     />
-    <style></style>
+    <script
+      src="https://kit.fontawesome.com/4f804e497f.js"
+      crossorigin="anonymous"
+    ></script>
   </head>
   <body class="p-4">
     <h1 class="is-size-1">Go links!</h1>
@@ -39,10 +42,9 @@
       </template>
       <template x-if="$store.auth.isAuth">
         <div class="is-flex is-flex-direction-column">
-          <p x-text="`Welcome ${$store.auth.username}!`"></p>
-          <h2 class="is-size-4">Links</h2>
+          <p class="is-size-4" x-text="`Welcome ${$store.auth.username}!`"></p>
           <p x-text="$store.auth.statusText"></p>
-          <table class="table">
+          <table class="table is-striped">
             <thead>
               <tr>
                 <th>Short link</th>
@@ -72,23 +74,25 @@
                   <button
                     class="button is-primary is-small"
                     x-on:click="$store.auth.addLink()"
+                    title="Add"
                   >
-                    Add
+                    <i class="fa-solid fa-plus"></i>
                   </button>
                 </td>
               </tr>
               <template x-for="link in $store.auth.links">
                 <tr>
                   <td>
-                    <a x-bind:href="'/'+link.short" x-text="link.short"></a>
+                    <a x-bind:href="'/'+link.short" x-text="'/'+link.short"></a>
                   </td>
                   <td><a x-bind:href="link.url" x-text="link.url"></a></td>
                   <td>
                     <button
                       class="button is-danger is-small"
                       x-on:click="$store.auth.deleteLink(link)"
+                      title="Delete"
                     >
-                      Delete
+                      <i class="fa-solid fa-trash"></i>
                     </button>
                   </td>
                 </tr>
