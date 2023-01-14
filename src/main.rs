@@ -1,30 +1,44 @@
 #![forbid(unsafe_code)]
 
 use crate::{
-    routes::{create_link, delete_link, get_links, goto, home},
+    routes::{
+        create_link, delete_link, get_links, goto, home, login, login_post, login_token, logout,
+    },
     state::AppState,
-    store::{Config, Credentials},
+    store::Config,
 };
+use auth::{current_user, Claims};
 use axum::{
-    extract::State,
-    headers::{self, HeaderMapExt},
-    http::{Request, StatusCode},
-    middleware::{self, Next},
-    response::Response,
+    middleware::{self},
     routing::{delete, get, post},
     Router,
 };
 use clap::Parser;
-use secrecy::Secret;
-use std::{net::SocketAddr, path::PathBuf, sync::Arc};
-use tokio::sync::Mutex;
+use std::{net::SocketAddr, path::PathBuf};
+use tera::Tera;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+mod auth;
 mod cli;
 mod error;
 mod password;
 mod routes;
 mod state;
 mod store;
+
+lazy_static::lazy_static! {
+    pub static ref TEMPLATES: Tera = {
+        let mut tera = match Tera::new("templates/**/*") {
+            Ok(t) => t,
+            Err(e) => {
+                println!("Parsing error(s): {}", e);
+                std::process::exit(1);
+            }
+        };
+        tera.autoescape_on(vec![".html"]);
+        tera
+    };
+}
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -42,7 +56,12 @@ enum Subcommand {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let args = Args::parse();
     tracing::debug!(?args);
@@ -57,17 +76,18 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let links_config = Config::new(args.config).await?;
-    let credentials = links_config.auth();
 
-    let shared_state = Arc::new(AppState {
-        links: Mutex::new(links_config),
-    });
+    let state = AppState::new(links_config);
 
     let app = Router::new()
         .route("/", get(home))
-        .nest("/api", api_router(credentials))
+        .route("/login", get(login))
+        .route("/login", post(login_post))
+        .route("/login/token", post(login_token))
+        .route("/logout", post(logout))
+        .nest("/api", api_router(state.clone()))
         .route("/:short", get(goto))
-        .with_state(shared_state);
+        .with_state(state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::info!("listening on {}", addr);
@@ -78,37 +98,13 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn api_router(credentials: Credentials) -> Router<Arc<AppState>> {
-    tracing::debug!(?credentials);
+fn api_router(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/link", get(get_links))
         .route("/link", post(create_link))
         .route("/link", delete(delete_link))
-        .route_layer(middleware::from_fn_with_state(
-            Arc::new(credentials),
-            auth_middleware,
+        .route("/user", get(current_user))
+        .route_layer(middleware::from_extractor_with_state::<Claims, AppState>(
+            state,
         ))
-}
-
-async fn auth_middleware<B>(
-    State(credentials): State<Arc<Credentials>>,
-    req: Request<B>,
-    next: Next<B>,
-) -> Result<Response, StatusCode> {
-    let auth_header = req
-        .headers()
-        .typed_get::<headers::Authorization<headers::authorization::Basic>>();
-
-    let user = if let Some(basic) = auth_header {
-        credentials.auth(basic.username(), Secret::new(basic.password().into()))
-    } else {
-        None
-    };
-
-    tracing::debug!(?user);
-
-    match user {
-        Some(_) => Ok(next.run(req).await),
-        None => Err(StatusCode::UNAUTHORIZED),
-    }
 }

@@ -1,0 +1,52 @@
+{% extends "base.html" %} {% block title %}Login{% endblock title %} {% block
+body %}
+<div x-data>
+  <div class="is-flex is-flex-direction-column">
+    <h2 class="is-size-4 mb-4">Login</h2>
+    <input
+      type="text"
+      class="input mb-4"
+      placeholder="username"
+      x-model="$store.auth.username"
+    />
+    <input
+      type="password"
+      class="input mb-4"
+      placeholder="password"
+      x-model="$store.auth.password"
+    />
+    <button x-on:click="$store.auth.login()" class="button is-primary mb-4">
+      Login
+    </button>
+    <p x-text="$store.auth.statusText"></p>
+  </div>
+</div>
+<script src="https://unpkg.com/alpinejs@3.10.5/dist/cdn.min.js" defer></script>
+<script>
+  document.addEventListener("alpine:init", () => {
+    Alpine.store("auth", {
+      username: "",
+      password: "",
+      statusText: "",
+      async login() {
+        this.statusText = "";
+        const resp = await fetch("/login", {
+          method: "POST",
+          body: JSON.stringify({
+            username: this.username,
+            password: this.password,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (resp.status === 200) {
+          location.href = "/";
+        } else {
+          this.statusText = "Unable to login! Check credentials.";
+        }
+      },
+    });
+  });
+</script>
+{% endblock body %}

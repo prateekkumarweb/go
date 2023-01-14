@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Dashboard{% endblock title %} | Go</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.css"
+    />
+    <style>
+      body {
+        font-size: 16px;
+      }
+      .w-6 {
+        width: 1.5rem;
+      }
+      .h-6 {
+        height: 1.5rem;
+      }
+    </style>
+  </head>
+  <body class="p-4">
+    <h1 class="is-size-1">Go links!</h1>
+    {% block body %}
+    <p>Welcome!</p>
+    {% endblock body %}
+  </body>
+</html>
