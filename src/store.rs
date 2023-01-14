@@ -51,24 +51,6 @@ async fn write_db(path: &PathBuf, db: &Store) -> Result<()> {
         .context(format!("Failed to write config file: {:?}", path))
 }
 
-// #[derive(Debug, Clone)]
-// pub struct Credentials {
-//     username: Username,
-//     password: Password,
-// }
-
-// impl Credentials {
-//     pub fn auth(&self, username: &str, password: Secret<String>) -> Option<Username> {
-//         if username == self.username.0
-//             && verify_password_hash(self.password.0.clone(), password).is_ok()
-//         {
-//             Some(Username(username.into()))
-//         } else {
-//             None
-//         }
-//     }
-// }
-
 impl Config {
     pub async fn new(path: PathBuf) -> Result<Self> {
         let store = read_db(&path)
@@ -90,13 +72,6 @@ impl Config {
         write_db(&path, &store).await?;
         Ok(Self { path, store })
     }
-
-    // pub fn auth(&self) -> Credentials {
-    //     Credentials {
-    //         username: self.store.username.clone(),
-    //         password: self.store.password.clone(),
-    //     }
-    // }
 
     pub fn auth_user(&self, username: &str, password: Secret<String>) -> Option<Username> {
         if username == self.store.username.0

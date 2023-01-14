@@ -15,5 +15,5 @@ RUN cargo build --release --bin go
 FROM debian:11-slim AS runtime
 WORKDIR /app
 COPY --from=builder /app/target/release/go go
-COPY client client
+COPY templates templates
 ENTRYPOINT ["./go"]
